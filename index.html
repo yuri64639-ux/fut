@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -8,45 +8,59 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #eef2f3; padding: 20px; color: #333; }
         .container { max-width: 400px; background: white; padding: 30px; margin: auto; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         h2 { margin-top: 0; color: #1e3c72; }
-        input[type="text"] { width: 90%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
-        input[type="text"]:focus { border-color: #2a5298; }
-        button { background: #28a745; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 8px; cursor: pointer; width: 96%; font-weight: bold; }
+        input[type="text"], input[type="tel"] { width: 90%; padding: 12px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+        input[type="text"]:focus, input[type="tel"]:focus { border-color: #2a5298; }
+        button { background: #28a745; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 8px; cursor: pointer; width: 96%; font-weight: bold; margin-bottom: 10px; }
         button:hover { background: #218838; }
+        .btn-whatsapp { background: #25d366; color: white; }
+        .btn-whatsapp:hover { background: #1ebd56; }
         .status { font-weight: bold; font-size: 18px; padding: 15px; margin: 20px 0; border-radius: 8px; }
         .confirmado { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         ul { list-style: none; padding: 0; text-align: left; margin-top: 20px; }
-        li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 16px; }
-        .btn-limpar { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; text-decoration: underline; margin-top: 20px; }
+        li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 16px; align-items: center; }
+        .telefone-lista { color: #666; font-size: 14px; }
+        .btn-limpar { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; text-decoration: underline; margin-top: 20px; display: block; width: 100%; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>⚽ Lista do Futebol</h2>
-        <p>Digite seu nome para confirmar presença na partida de hoje.</p>
-        
+        <p>Digite seus dados para confirmar presença na partida de hoje.</p>
+                 
         <input type="text" id="nomeJogador" placeholder="Seu nome completo">
+        <input type="tel" id="telJogador" placeholder="Seu WhatsApp (ex: 11 99999-9999)" maxlength="15" onkeyup="mascaraTelefone(this)">
         <button onclick="confirmarPresenca()">Confirmar Minha Presença</button>
+        
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">📢 Enviar Lista no WhatsApp</button>
 
         <div id="statusFut" class="status cancelado">❌ FUT CANCELADO! Faltam 10 jogadores.</div>
 
         <h3>Confirmados (<span id="total">0</span>/10)</h3>
         <ul id="lista"></ul>
-        
+                 
         <button class="btn-limpar" onclick="limparLista()">Limpar Lista para Próximo Jogo</button>
     </div>
 
     <script>
         let jogadores = JSON.parse(localStorage.getItem('futebol_jogadores')) || [];
 
+        // Máscara automática para formatar o telefone enquanto o jogador digita
+        function mascaraTelefone(input) {
+            let v = input.value.replace(/\D/g, '');
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+            input.value = v;
+        }
+
         function atualizarTela() {
             const listaElement = document.getElementById('lista');
             const totalElement = document.getElementById('total');
             const statusElement = document.getElementById('statusFut');
-            
+                         
             listaElement.innerHTML = '';
-            jogadores.forEach(nome => {
-                listaElement.innerHTML += `<li><span>🏃 ${nome}</span></li>`;
+            jogadores.forEach(jogador => {
+                listaElement.innerHTML += `<li><span>🏃 ${jogador.nome}</span> <span class="telefone-lista">📱 ${jogador.telefone}</span></li>`;
             });
 
             totalElement.innerText = jogadores.length;
@@ -58,27 +72,58 @@
                 statusElement.innerText = `❌ FUT CANCELADO! Faltam ${10 - jogadores.length} jogadores.`;
                 statusElement.className = "status cancelado";
             }
-            
+                         
             localStorage.setItem('futebol_jogadores', JSON.stringify(jogadores));
         }
 
         function confirmarPresenca() {
             const campoNome = document.getElementById('nomeJogador');
+            const campoTel = document.getElementById('telJogador');
             const nome = campoNome.value.trim();
-            
-            if (nome === '') {
-                alert('Por favor, digite o seu nome!');
+            const telefone = campoTel.value.trim();
+                         
+            if (nome === '' || telefone === '') {
+                alert('Por favor, preencha o nome e o telefone!');
                 return;
             }
-            
-            if (jogadores.includes(nome)) {
+
+            // Evita que o mesmo nome se cadastre duas vezes
+            const jaExiste = jogadores.some(j => j.nome.toLowerCase() === nome.toLowerCase());
+            if (jaExiste) {
                 alert('Você já está confirmado nesta lista!');
                 return;
             }
 
-            jogadores.push(nome);
+            jogadores.push({ nome: nome, telefone: telefone });
             campoNome.value = '';
+            campoTel.value = '';
             atualizarTela();
+        }
+
+        function enviarWhatsApp() {
+            if (jogadores.length === 0) {
+                alert('A lista está vazia! Adicione jogadores antes de enviar.');
+                return;
+            }
+
+            // Monta o texto da mensagem formatada para o WhatsApp
+            let texto = `⚽ *LISTA DO FUTEBOL DE HOJE* ⚽\n\n`;
+            
+            jogadores.forEach((jogador, index) => {
+                texto += `${index + 1}. ${jogador.nome} (${jogador.telefone})\n`;
+            });
+
+            texto += `\n*Total de confirmados:* ${jogadores.length}/10\n`;
+            
+            if (jogadores.length >= 10) {
+                texto += `✅ *FUT CONFIRMADO! Bora pro jogo!*`;
+            } else {
+                texto += `⏳ *Faltam ${10 - jogadores.length} jogadores para confirmar.*`;
+            }
+
+            // Codifica o texto para URL e abre o WhatsApp
+            const url = `https://whatsapp.com{encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
         }
 
         function limparLista() {
