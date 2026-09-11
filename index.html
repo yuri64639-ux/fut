@@ -27,44 +27,39 @@ html<!DOCTYPE html>
     <div class="container">
         <h2>⚽ Lista do Futebol</h2>
         <p>Digite seus dados para confirmar presença na partida de hoje.</p>
-                 
+                          
         <input type="text" id="nomeJogador" placeholder="Seu nome completo">
         <input type="tel" id="telJogador" placeholder="Seu WhatsApp (ex: 11 99999-9999)" maxlength="15" onkeyup="mascaraTelefone(this)">
         <button onclick="confirmarPresenca()">Confirmar Minha Presença</button>
-        
-        <button class="btn-whatsapp" onclick="enviarWhatsApp()">📢 Enviar Lista no WhatsApp</button>
-
-        <div id="statusFut" class="status cancelado">❌ FUT CANCELADO! Faltam 10 jogadores.</div>
-
+                 
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">📢 Enviar Lista no WhatsApp</button> 
+        <div id="statusFut" class="status cancelado">❌ FUT CANCELADO! Faltam 10 jogadores.</div> 
         <h3>Confirmados (<span id="total">0</span>/10)</h3>
         <ul id="lista"></ul>
-                 
+                          
         <button class="btn-limpar" onclick="limparLista()">Limpar Lista para Próximo Jogo</button>
-    </div>
+    </div> 
 
     <script>
-        let jogadores = JSON.parse(localStorage.getItem('futebol_jogadores')) || [];
+        let jogadores = JSON.parse(localStorage.getItem('futebol_jogadores')) || []; 
 
-        // Máscara automática para formatar o telefone enquanto o jogador digita
         function mascaraTelefone(input) {
             let v = input.value.replace(/\D/g, '');
             v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
             v = v.replace(/(\d{5})(\d)/, '$1-$2');
             input.value = v;
-        }
+        } 
 
         function atualizarTela() {
             const listaElement = document.getElementById('lista');
             const totalElement = document.getElementById('total');
             const statusElement = document.getElementById('statusFut');
-                         
+                                      
             listaElement.innerHTML = '';
             jogadores.forEach(jogador => {
                 listaElement.innerHTML += `<li><span>🏃 ${jogador.nome}</span> <span class="telefone-lista">📱 ${jogador.telefone}</span></li>`;
-            });
-
-            totalElement.innerText = jogadores.length;
-
+            }); 
+            totalElement.innerText = jogadores.length; 
             if (jogadores.length >= 10) {
                 statusElement.innerText = "⚽ FUT CONFIRMADO! Podem reservar a quadra!";
                 statusElement.className = "status confirmado";
@@ -72,66 +67,60 @@ html<!DOCTYPE html>
                 statusElement.innerText = `❌ FUT CANCELADO! Faltam ${10 - jogadores.length} jogadores.`;
                 statusElement.className = "status cancelado";
             }
-                         
+                                      
             localStorage.setItem('futebol_jogadores', JSON.stringify(jogadores));
-        }
+        } 
 
         function confirmarPresenca() {
             const campoNome = document.getElementById('nomeJogador');
             const campoTel = document.getElementById('telJogador');
             const nome = campoNome.value.trim();
             const telefone = campoTel.value.trim();
-                         
+                                      
             if (nome === '' || telefone === '') {
                 alert('Por favor, preencha o nome e o telefone!');
                 return;
-            }
-
-            // Evita que o mesmo nome se cadastre duas vezes
+            } 
             const jaExiste = jogadores.some(j => j.nome.toLowerCase() === nome.toLowerCase());
             if (jaExiste) {
                 alert('Você já está confirmado nesta lista!');
                 return;
-            }
-
+            } 
             jogadores.push({ nome: nome, telefone: telefone });
             campoNome.value = '';
             campoTel.value = '';
             atualizarTela();
-        }
+        } 
 
         function enviarWhatsApp() {
             if (jogadores.length === 0) {
                 alert('A lista está vazia! Adicione jogadores antes de enviar.');
                 return;
-            }
-
-            // Monta o texto da mensagem formatada para o WhatsApp
+            } 
             let texto = `⚽ *LISTA DO FUTEBOL DE HOJE* ⚽\n\n`;
-            
+                         
             jogadores.forEach((jogador, index) => {
                 texto += `${index + 1}. ${jogador.nome} (${jogador.telefone})\n`;
-            });
-
+            }); 
             texto += `\n*Total de confirmados:* ${jogadores.length}/10\n`;
-            
+                         
             if (jogadores.length >= 10) {
                 texto += `✅ *FUT CONFIRMADO! Bora pro jogo!*`;
             } else {
                 texto += `⏳ *Faltam ${10 - jogadores.length} jogadores para confirmar.*`;
-            }
-
-            // Codifica o texto para URL e abre o WhatsApp
-          const url = 'https://whatsapp.com' + encodeURIComponent(texto);
-window.open(url, '_blank');
-        }
+            } 
+            
+            // Correção da URL do WhatsApp
+            const url = 'https://whatsapp.com' + encodeURIComponent(texto);
+            window.open(url, '_blank');
+        } 
 
         function limparLista() {
             if (confirm('Tem certeza que deseja apagar todos os nomes e começar uma nova lista?')) {
                 jogadores = [];
                 atualizarTela();
             }
-        }
+        } 
 
         atualizarTela();
     </script>
