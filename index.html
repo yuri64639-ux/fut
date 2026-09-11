@@ -122,8 +122,8 @@ html<!DOCTYPE html>
             }
 
             // Codifica o texto para URL e abre o WhatsApp
-            const url = `https://whatsapp.com{encodeURIComponent(texto)}`;
-            window.open(url, '_blank');
+          const url = 'https://whatsapp.com' + encodeURIComponent(texto);
+window.open(url, '_blank');
         }
 
         function limparLista() {
