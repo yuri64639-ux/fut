@@ -1,4 +1,4 @@
-html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -97,11 +97,13 @@ html<!DOCTYPE html>
                 alert('A lista está vazia! Adicione jogadores antes de enviar.');
                 return;
             } 
+
             let texto = `⚽ *LISTA DO FUTEBOL DE HOJE* ⚽\n\n`;
                          
             jogadores.forEach((jogador, index) => {
                 texto += `${index + 1}. ${jogador.nome} (${jogador.telefone})\n`;
             }); 
+
             texto += `\n*Total de confirmados:* ${jogadores.length}/10\n`;
                          
             if (jogadores.length >= 10) {
@@ -110,9 +112,18 @@ html<!DOCTYPE html>
                 texto += `⏳ *Faltam ${10 - jogadores.length} jogadores para confirmar.*`;
             } 
             
-            // Correção da URL do WhatsApp
-            const url = 'https://whatsapp.com' + encodeURIComponent(texto);
-            window.open(url, '_blank');
+            // Link universal correto com o parâmetro de texto esperado pelo WhatsApp
+            const url = 'https://wa.me' + encodeURIComponent(texto);
+            
+            // Simulação de clique limpo para evitar bloqueio de pop-up do navegador
+            const linkTemporario = document.createElement('a');
+            linkTemporario.href = url;
+            linkTemporario.target = '_blank';
+            linkTemporario.rel = 'noopener noreferrer';
+            
+            document.body.appendChild(linkTemporario);
+            linkTemporario.click();
+            document.body.removeChild(linkTemporario);
         } 
 
         function limparLista() {
